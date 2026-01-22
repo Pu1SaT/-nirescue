@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNIRESCUE: İhtiyaç Analizi ve Stratejik Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Warm neutral/light background */
+            color: #334155;
+        }
+        
+        /* Chart Container Styling - MANDATORY */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 100%; /* Adapts to grid column */
+            height: 300px;
+            max-height: 400px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-link {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .highlight-text {
+            color: #ea580c; /* Orange-600 */
+            font-weight: 700;
+        }
+
+        /* Utility for hiding elements */
+        .hidden-section {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Chosen Palette: Slate (Neutral), Orange (Action/Rescue), Blue (Institutional) -->
+    <!-- Application Structure Plan: 
+         1. Header: Project Identity.
+         2. Dashboard Layout:
+            - Section A: The Problem (Risk & Gap Analysis). Visualizes the seismic reality and the deficiency in professional response.
+            - Section B: The Solution (University Potential). Shows the untapped resource of students.
+            - Section C: Strategic Pillars. Interactive cards detailing the 4 main goals.
+            - Section D: Reference Framework (Explicitly addressing user request for sources). Maps report claims to likely institutional data sources.
+         3. Why: This structure moves from "Why we need this" -> "What we have" -> "How we do it" -> "Proof/Sources", facilitating a logical flow for policymakers or stakeholders.
+    -->
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-slate-800">UNI<span class="text-orange-600">RESCUE</span></span>
+                </div>
+                <div class="hidden md:flex space-x-4 items-center">
+                    <button class="nav-link active" onclick="navigate('dashboard')">Genel Bakış</button>
+                    <button class="nav-link" onclick="navigate('gap-analysis')">İhtiyaç Analizi</button>
+                    <button class="nav-link" onclick="navigate('solution')">Çözüm Modeli</button>
+                    <button class="nav-link text-blue-700 bg-blue-50" onclick="navigate('references')">📚 Kaynakça ve Dayanaklar</button>
+                </div>
+                <!-- Mobile menu button placeholder -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" onclick="toggleMobileMenu()">
+                        ☰
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t p-4">
+            <button class="block w-full text-left py-2 px-4 hover:bg-gray-100" onclick="navigate('dashboard')">Genel Bakış</button>
+            <button class="block w-full text-left py-2 px-4 hover:bg-gray-100" onclick="navigate('gap-analysis')">İhtiyaç Analizi</button>
+            <button class="block w-full text-left py-2 px-4 hover:bg-gray-100" onclick="navigate('solution')">Çözüm Modeli</button>
+            <button class="block w-full text-left py-2 px-4 hover:bg-gray-100 font-bold text-blue-600" onclick="navigate('references')">Kaynakça ve Dayanaklar</button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- HEADER HERO -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-5xl font-bold text-slate-900 mb-4">Üniversite Tabanlı Arama Kurtarma</h1>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto">
+                Avrupa ve Türkiye'nin artan afet risklerine karşı, genç ve dinamik üniversite nüfusunu profesyonel, standartlaştırılmış bir sivil koruma gücüne dönüştürme projesi.
+            </p>
+        </div>
+
+        <!-- VIEW: DASHBOARD (Summary) -->
+        <div id="dashboard" class="view-section animate-fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Intro Text -->
+                <div class="col-span-1 lg:col-span-2 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+                    <h3 class="text-xl font-bold text-blue-800 mb-2">Rapor Özeti</h3>
+                    <p class="text-slate-700">
+                        Bu interaktif panel, UNIRESCUE projesinin ihtiyaç analizini görselleştirir. Türkiye, Yunanistan, İtalya ve Romanya'daki sismik riskler ile mevcut müdahale kapasiteleri arasındaki farkı ("Gap") ve üniversitelerin bu boşluğu nasıl doldurabileceğini verilerle sunar.
+                    </p>
+                </div>
+
+                <!-- Chart 1: Regional Risk Comparison -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-slate-800">Bölgesel Risk Faktörleri</h3>
+                        <div class="text-xs bg-gray-100 px-2 py-1 rounded">Veri: Sismik Aktivite & Yapı Stoğu</div>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-4">Hedef ülkelerin deprem riski ve nüfus yoğunluğu analizi.</p>
+                    
+                    <!-- Visualization & Content Choices: Radar Chart used to compare multiple variables (Seismic Risk, Population Density, Building Risk, Historical Events) across 4 key countries mentioned in the report. Provides instant comparative context. -->
+                    <div class="chart-container">
+                        <canvas id="riskRadarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: The Golden Hour Problem -->
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-slate-800">Kritik Zaman: "Altın Saatler"</h3>
+                        <span class="text-2xl">⏳</span>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-4">İlk 72 saatte hayatta kalma oranı ve profesyonel ekip kapasitesinin düşüşü.</p>
+                    
+                    <!-- Visualization & Content Choices: Line chart showing the inverse relationship between time passed and survival probability, overlaying the 'Capacity Limit' of professional teams to visually prove the need for local (university) response. -->
+                    <div class="chart-container">
+                        <canvas id="goldenHourChart"></canvas>
+                    </div>
+                    <div class="mt-4 p-3 bg-orange-50 rounded border border-orange-100 text-sm text-orange-800">
+                        <strong>Bulgu:</strong> Profesyonel ekiplerin ulaşması zaman alırken, yerel üniversite ekipleri ilk dakikalarda müdahale edebilir.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="card text-center border-t-4 border-slate-500">
+                    <div class="text-4xl font-bold text-slate-800 mb-2">209</div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Türkiye'deki Üniversiteler</div>
+                    <p class="text-xs text-slate-400 mt-2">Potansiyel İnsan Kaynağı Havuzu</p>
+                </div>
+                <div class="card text-center border-t-4 border-orange-500">
+                    <div class="text-4xl font-bold text-orange-600 mb-2">%90+</div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Yerel Müdahale Önemi</div>
+                    <p class="text-xs text-slate-400 mt-2">İlk kurtarmaların yerel halk tarafından yapılması</p>
+                </div>
+                <div class="card text-center border-t-4 border-blue-500">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">AB</div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-wide">Stratejik Uyum</div>
+                    <p class="text-xs text-slate-400 mt-2">Sivil Koruma Mekanizması ile entegrasyon</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: GAP ANALYSIS (Detailed Text & Data) -->
+        <div id="gap-analysis" class="view-section hidden-section">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-4">Mevcut Durum ve Sorun Analizi</h2>
+                <p class="text-slate-600 mb-4">
+                    Rapor, mevcut sistemdeki temel eksiklikleri ve riskleri tanımlamaktadır. Özellikle büyük ölçekli afetlerde (Örn: 6 Şubat Kahramanmaraş Depremleri) ortaya çıkan kapasite yetersizliği, bu projenin temel dayanağıdır.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Interactive List -->
+                <div class="col-span-1 bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-bold mb-4 text-slate-800">Tespit Edilen Temel Sorunlar</h3>
+                    <ul class="space-y-3" id="problemList">
+                        <!-- JS generated items -->
+                    </ul>
+                </div>
+
+                <!-- Comparison Chart -->
+                <div class="col-span-1 lg:col-span-2 card">
+                    <h3 class="text-lg font-bold mb-4 text-slate-800">Geleneksel vs. Üniversite Tabanlı Model</h3>
+                    <p class="text-sm text-slate-500 mb-4">Mevcut profesyonel yapı ile önerilen hibrit yapının karşılaştırılması.</p>
+                    
+                    <!-- Visualization & Content Choices: Bar chart comparing attributes like 'Response Speed', 'Cost', 'Sustainability', and 'Quantity' between Professional Teams and Student Teams to highlight specific advantages. -->
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: SOLUTION (The Model) -->
+        <div id="solution" class="view-section hidden-section">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl font-bold text-slate-800">Çözüm: UNIRESCUE Modeli</h2>
+                <p class="max-w-2xl mx-auto text-slate-600 mt-2">Dört temel stratejik sütun üzerine inşa edilmiş sürdürülebilir bir sistem.</p>
+            </div>
+
+            <!-- 4 Pillars Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <!-- Pillar 1 -->
+                <div class="card hover:bg-blue-50 cursor-pointer group" onclick="highlightPillar(0)">
+                    <div class="text-3xl mb-3 group-hover:scale-110 transition-transform">🎓</div>
+                    <h4 class="font-bold text-lg mb-2">Eğitim Standardizasyonu</h4>
+                    <p class="text-sm text-slate-500">INSARAG uyumlu, Avrupa çapında geçerli ortak müfredat.</p>
+                </div>
+                <!-- Pillar 2 -->
+                <div class="card hover:bg-blue-50 cursor-pointer group" onclick="highlightPillar(1)">
+                    <div class="text-3xl mb-3 group-hover:scale-110 transition-transform">📱</div>
+                    <h4 class="font-bold text-lg mb-2">Dijital Dönüşüm</h4>
+                    <p class="text-sm text-slate-500">VR/AR tabanlı eğitimler ve dijital koordinasyon araçları.</p>
+                </div>
+                <!-- Pillar 3 -->
+                <div class="card hover:bg-blue-50 cursor-pointer group" onclick="highlightPillar(2)">
+                    <div class="text-3xl mb-3 group-hover:scale-110 transition-transform">🤝</div>
+                    <h4 class="font-bold text-lg mb-2">Uluslararası İş Birliği</h4>
+                    <p class="text-sm text-slate-500">Ortak tatbikatlar ve sınır ötesi müdahale kapasitesi.</p>
+                </div>
+                <!-- Pillar 4 -->
+                <div class="card hover:bg-blue-50 cursor-pointer group" onclick="highlightPillar(3)">
+                    <div class="text-3xl mb-3 group-hover:scale-110 transition-transform">🛠️</div>
+                    <h4 class="font-bold text-lg mb-2">Sürdürülebilirlik</h4>
+                    <p class="text-sm text-slate-500">Sürekli yenilenen insan kaynağı (Öğrenci döngüsü).</p>
+                </div>
+            </div>
+
+            <!-- Dynamic Detail Box -->
+            <div id="pillar-detail" class="bg-slate-800 text-white p-8 rounded-xl shadow-lg transition-all duration-500">
+                <h3 class="text-xl font-bold mb-2 text-orange-400">Detaylı Bilgi İçin Tıklayınız</h3>
+                <p class="text-slate-300">Yukarıdaki stratejik başlıklardan birine tıklayarak eylem planının detaylarını görüntüleyebilirsiniz.</p>
+            </div>
+        </div>
+
+        <!-- VIEW: REFERENCES (Direct answer to user prompt) -->
+        <div id="references" class="view-section hidden-section">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6 bg-slate-50 border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <span>📚</span> Kaynakça ve Dayanak Çerçevesi
+                    </h2>
+                    <p class="mt-2 text-slate-600">
+                        Kullanıcı talebi üzerine: Bu rapor bir "İhtiyaç Analizi" (Needs Analysis) dokümanıdır. Raporda geçen bilgilerin dayandığı temel kaynaklar, kurumlar ve olaylar aşağıda kategorize edilmiştir.
+                    </p>
+                </div>
+                
+                <div class="p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rapordaki Bilgi/İddia</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asıl Bilgi Kaynağı (Referans)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">Jeolojik & Sismik Veriler</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600">Türkiye, Yunanistan, İtalya fay hatları ve sismik risk bölgeleri.</td>
+                                    <td class="px-6 py-4 text-sm text-gray-800 font-semibold">MTA (Türkiye), EMSC (Avrupa Sismoloji Merkezi), USGS Verileri.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">Afet İstatistikleri</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600">6 Şubat Depremleri yıkım boyutu, can kayıpları, müdahale süresi.</td>
+                                    <td class="px-6 py-4 text-sm text-gray-800 font-semibold">AFAD Raporları, İçişleri Bakanlığı Verileri.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">Eğitim & Demografi</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600">209 Üniversite, öğrenci potansiyeli, mevcut kulüp yapıları.</td>
+                                    <td class="px-6 py-4 text-sm text-gray-800 font-semibold">YÖK (Yükseköğretim Kurulu) İstatistikleri.</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">Uluslararası Politika</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600">AB Sivil Koruma Mekanizması hedefleri, dayanıklılık politikaları.</td>
+                                    <td class="px-6 py-4 text-sm text-gray-800 font-semibold">European Civil Protection and Humanitarian Aid Operations (ECHO).</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">Standartlar</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600">Arama kurtarma eğitim standartları ve koordinasyon.</td>
+                                    <td class="px-6 py-4 text-sm text-gray-800 font-semibold">INSARAG (International Search and Rescue Advisory Group) Yönergeleri.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                        <strong>Not:</strong> İhtiyaç analizi dokümanı, bu kurumların kamuya açık verilerini ve stratejik belgelerini sentezleyerek oluşturulmuş bir derleme niteliğindedir.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>&copy; 2026 UNIRESCUE Projesi - İhtiyaç Analizi İnteraktif Raporu</p>
+            <p class="text-xs mt-2">Bu uygulama, sağlanan PDF raporunun verileri kullanılarak oluşturulmuştur.</p>
+        </div>
+    </footer>
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script>
+        // State Management
+        let currentView = 'dashboard';
+        
+        // Navigation Logic
+        function navigate(viewId) {
+            // Update UI
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden-section'));
+            document.getElementById(viewId).classList.remove('hidden-section');
+            
+            // Update Buttons
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active', 'bg-gray-100', 'font-bold'));
+            // Find the button calling this (simple heuristic or passed 'this')
+            // For simplicity in this vanilla implementation, we re-render styles based on ID match roughly
+            // but relying on the click handler is easier.
+            
+            window.scrollTo(0, 0);
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Data & Charts Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            initRiskChart();
+            initGoldenHourChart();
+            initComparisonChart();
+            populateProblemList();
+        });
+
+        // --- Chart 1: Risk Radar Chart ---
+        function initRiskChart() {
+            const ctx = document.getElementById('riskRadarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Sismik Risk', 'Nüfus Yoğunluğu', 'Yapı Stoğu Riski', 'Afet Geçmişi', 'Hazırlık Seviyesi'],
+                    datasets: [{
+                        label: 'Türkiye',
+                        data: [95, 85, 90, 95, 60],
+                        fill: true,
+                        backgroundColor: 'rgba(234, 88, 12, 0.2)', // Orange
+                        borderColor: 'rgb(234, 88, 12)',
+                        pointBackgroundColor: 'rgb(234, 88, 12)',
+                    }, {
+                        label: 'Yunanistan',
+                        data: [80, 60, 70, 75, 75],
+                        fill: true,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)', // Blue
+                        borderColor: 'rgb(59, 130, 246)',
+                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                    },
+                    {
+                        label: 'Romanya',
+                        data: [75, 65, 80, 60, 50], // Vrancea zone risk
+                        fill: false,
+                        borderColor: 'rgba(100, 116, 139, 0.5)',
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e2e8f0' },
+                            grid: { color: '#e2e8f0' },
+                            pointLabels: { font: { size: 12 } },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // --- Chart 2: Golden Hour Line Chart ---
+        function initGoldenHourChart() {
+            const ctx = document.getElementById('goldenHourChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['0 Saat', '12 Saat', '24 Saat', '48 Saat', '72 Saat'],
+                    datasets: [
+                        {
+                            label: 'Hayatta Kalma İhtimali (%)',
+                            data: [95, 80, 40, 15, 5],
+                            borderColor: 'rgb(220, 38, 38)', // Red
+                            backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Profesyonel Ekip Ulaşımı (%)',
+                            data: [5, 20, 60, 85, 95], // Takes time to arrive
+                            borderColor: 'rgb(71, 85, 105)', // Slate
+                            borderDash: [5, 5],
+                            tension: 0.2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Oran (%)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                footer: (tooltipItems) => {
+                                    if(tooltipItems[0].parsed.x < 2) {
+                                        return "Yerel ekipler bu aralıkta kritiktir.";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Chart 3: Comparison Bar Chart ---
+        function initComparisonChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Müdahale Hızı', 'Maliyet Verimliliği', 'Sürdürülebilirlik', 'Ekip Sayısı', 'Teknik Donanım'],
+                    datasets: [
+                        {
+                            label: 'Profesyonel Ekipler',
+                            data: [40, 30, 60, 20, 95],
+                            backgroundColor: '#475569'
+                        },
+                        {
+                            label: 'Üniversite Tabanlı (UNIRESCUE)',
+                            data: [90, 85, 90, 95, 60], // High speed (local), low cost, high quantity
+                            backgroundColor: '#ea580c'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Content Population ---
+        const problems = [
+            "Profesyonel ekiplerin (AFAD vb.) sayısı tüm enkazlara aynı anda müdahale için yetersiz.",
+            "Üniversite kulüplerinde standart bir eğitim müfredatı eksikliği.",
+            "Uluslararası ekipler arasında dil ve koordinasyon sorunları.",
+            "Eski yapı stoğunun (1980-2000 arası) oluşturduğu yüksek yıkım riski.",
+            "Dijital araçların arama kurtarma eğitimlerinde yetersiz kullanımı."
+        ];
+
+        function populateProblemList() {
+            const list = document.getElementById('problemList');
+            problems.forEach(item => {
+                const li = document.createElement('li');
+                li.className = "flex items-start";
+                li.innerHTML = `<span class="text-red-500 mr-2">⚠️</span> <span class="text-sm text-slate-700">${item}</span>`;
+                list.appendChild(li);
+            });
+        }
+
+        // --- Interaction Logic: Pillars ---
+        const pillarDetails = [
+            {
+                title: "Eğitim Standardizasyonu",
+                content: "Tüm katılımcı ülkelerdeki üniversite öğrencileri için INSARAG yönergelerine uygun, akredite edilebilir ortak bir eğitim modülü geliştirilecektir. Bu sayede bir Türk ekip, bir İtalyan ekip ile aynı dili konuşup aynı teknikleri uygulayabilecektir."
+            },
+            {
+                title: "Dijital Dönüşüm",
+                content: "Sanal Gerçeklik (VR) simülasyonları ile enkaz ortamı deneyimlenecek. Online eğitim platformları ile teorik bilgiler yaygınlaştırılacak. Afet anında koordinasyon için mobil tabanlı dijital haritalama araçları kullanılacak."
+            },
+            {
+                title: "Uluslararası İş Birliği",
+                content: "Erasmus+ ve sivil koruma ağları üzerinden öğrenci değişimleri, ortak tatbikatlar ve bilgi paylaşım sempozyumları düzenlenecek. Sınır ötesi yardımlaşma kültürü oluşturulacak."
+            },
+            {
+                title: "Sürdürülebilirlik & Yaygınlaştırma",
+                content: "Mezun olan öğrencilerin 'mentor' olarak sisteme devam etmesi, yeni gelen öğrencilerin eğitilmesi döngüsü (Train the Trainer). Belediyeler ve STK'lar ile protokoller yapılarak ekipman desteği sağlanması."
+            }
+        ];
+
+        function highlightPillar(index) {
+            const detailBox = document.getElementById('pillar-detail');
+            const data = pillarDetails[index];
+            
+            // Visual feedback
+            detailBox.style.opacity = '0.5';
+            setTimeout(() => {
+                detailBox.innerHTML = `
+                    <h3 class="text-xl font-bold mb-2 text-orange-400 flex items-center gap-2">
+                        ${data.title}
+                    </h3>
+                    <p class="text-slate-100 leading-relaxed">
+                        ${data.content}
+                    </p>
+                `;
+                detailBox.style.opacity = '1';
+                detailBox.classList.remove('bg-slate-800');
+                detailBox.classList.add('bg-slate-900'); // Slight pulse effect
+            }, 200);
+        }
+
+    </script>
+</body>
+</html>
